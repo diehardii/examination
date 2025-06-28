@@ -1,0 +1,26 @@
+按照下面的模式来改写：
+首先是PaperAna.js
+import axios from 'axios';
+
+const api = axios.create({
+    baseURL: 'http://localhost:8080/api/exam-paper/',
+    withCredentials: true, // 允许跨域携带 Cookie
+});
+
+export default {
+    // 获取用户所有科目
+    getUserSubjects() {
+        return api.get('/user-subjects');
+    },
+然后是paperAnaService.js
+import paperAnaApi from "@/api/paperAna.js";
+
+// 科目相关服务
+export const getUserSubjects = async () => {
+    try {
+        const response = await paperAnaApi.getUserSubjects();
+        return response.data;
+    } catch (error) {
+        throw new Error('获取用户科目列表失败');
+    }
+};

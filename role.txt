@@ -1,0 +1,485 @@
+角色实体
+package seucxxy.csd.backend.entity;
+
+
+
+
+import lombok.Data;
+
+@Data
+public class Role {
+    private Integer roleId;
+    private String roleName;
+}
+用户实体
+package seucxxy.csd.backend.entity;
+
+
+
+import lombok.Data;
+
+@Data
+public class User {
+    private Long id;
+    private String username;
+    private String password;
+    private String phone;
+    private Integer roleId;
+
+    // 关联的角色对象
+    private Role role;
+}
+权限管理主页面
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+    <title>用户角色管理</title>
+
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+
+        /* 整体布局 */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+
+        .sidebar {
+            width: 250px;
+            background-color: #162447;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            padding: 20px;
+            font-size: 22px;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #2d3436;
+            margin-bottom: 30px;
+        }
+
+        .menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex: 1;
+        }
+
+        .menu li {
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px;
+        }
+
+        .menu li:hover {
+            background-color: #1f4068;
+        }
+
+        .menu li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+        }
+        /* 主内容区域 */
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 20px;
+            background-color: #0f1a2c;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0;
+        }
+
+        h2 { color: #e0e0e0; }
+
+        /* 表格样式 */
+        .table-container {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #f0f8ff;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        thead tr {
+            background-color: #4a6fa5;
+            color: white;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #e6f7ff;
+        }
+
+        tbody tr:hover {
+            background-color: #d8e6f7;
+        }
+
+        /* 下拉菜单和按钮样式 */
+        .role-select {
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .update-btn {
+            padding: 6px 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .update-btn:hover {
+            background-color: #45a049;
+        }
+
+        /* 消息样式 */
+        .message {
+            color: green;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #e6ffe6;
+            border-radius: 4px;
+        }
+
+        .error {
+            color: red;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #ffebee;
+            border-radius: 4px;
+        }
+
+        /* 新增弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .close-btn {
+            margin-top: 15px;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            background-color: #45a049;
+        }
+
+        .success-icon {
+            color: #4CAF50;
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .error-icon {
+            color: #f44336;
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;  /* Increased z-index */
+            /* rest of your modal styles */
+        }
+        .logout-form {
+            display: inline;
+        }
+        .logout-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font: inherit;
+            padding: 0;
+        }
+    </style>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+<body>
+<div class="app-container">
+    <!-- 侧边栏导航 -->
+    <div th:replace="~{fragments/menu :: menu}"></div>
+
+    <!-- 主内容区域 -->
+    <div class="main-content">
+        <div class="container">
+            <h2>用户角色管理</h2>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>用户名</th>
+                        <th>手机号</th>
+                        <th>当前角色</th>
+                        <th>新角色</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="user : ${users}">
+                        <td th:text="${user.username}"></td>
+                        <td th:text="${user.phone}"></td>
+                        <td th:text="${user.role.roleName}"></td>
+                        <td>
+                            <select class="role-select" th:id="'role_' + ${user.phone}">
+                                <option th:each="role : ${roles}"
+                                        th:value="${role.roleId}"
+                                        th:selected="${user.role.roleId == role.roleId}"
+                                        th:text="${role.roleName}"></option>
+                            </select>
+                        </td>
+                        <td>
+                            <button class="update-btn"
+                                    th:attr="data-phone=${user.phone}">
+                                修改
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="messageModal" class="modal">
+    <div class="modal-content">
+        <div id="modalIcon" class="success-icon">✓</div>
+        <p id="modalMessage"></p>
+        <button class="close-btn" onclick="closeModal()">确定</button>
+    </div>
+</div>
+
+<script>
+    // 获取CSRF令牌信息
+    const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+    // 为所有修改按钮添加点击事件
+    document.addEventListener('DOMContentLoaded', function() {
+        const updateButtons = document.querySelectorAll('.update-btn');
+        updateButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const phone = this.getAttribute('data-phone');
+                updateRole(phone);
+            });
+        });
+
+        // 页面加载时检查消息
+        /*<![CDATA[*/
+        const message = /*[[${message}]]*/ null;
+        const error = /*[[${error}]]*/ null;
+        /*]]>*/
+
+        if (message) {
+            showModal(true, message);
+        }
+        if (error) {
+            showModal(false, error);
+        }
+    });
+
+    // 更新角色
+    function updateRole(phone) {
+        // 获取选择的角色ID
+        const roleSelect = document.getElementById("role_" + phone);
+        const roleId = roleSelect.value;
+
+        // 创建请求头
+        const headers = new Headers();
+        headers.append(csrfHeader, csrfToken);
+        headers.append('Content-Type', 'application/json');
+
+        // 发送AJAX请求
+        fetch('/auth/user-role-update', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+                phone: phone,
+                roleId: roleId
+            })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showModal(true, data.message);
+                    // 可选：更新页面上的角色显示
+                    const roleName = roleSelect.options[roleSelect.selectedIndex].text;
+                    const row = roleSelect.closest('tr');
+                    row.querySelector('td:nth-child(3)').textContent = roleName;
+                } else {
+                    showModal(false, data.message);
+                }
+            })
+            .catch(error => {
+                showModal(false, '操作失败: ' + error.message);
+            });
+    }
+
+    // 显示弹窗
+    function showModal(isSuccess, message) {
+        const modal = document.getElementById("messageModal");
+        const modalIcon = document.getElementById("modalIcon");
+        const modalMessage = document.getElementById("modalMessage");
+
+        modalIcon.className = isSuccess ? "success-icon" : "error-icon";
+        modalIcon.innerHTML = isSuccess ? "✓" : "✗";
+        modalMessage.textContent = message;
+        modal.style.display = "block";
+
+
+    }
+
+    // 关闭弹窗
+    function closeModal() {
+        document.getElementById("messageModal").style.display = "none";
+    }
+</script>
+
+
+</body>
+</html>
+角色管理控制器
+package seucxxy.csd.examinint.controller;
+
+
+import jakarta.servlet.http.HttpSession;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import seucxxy.csd.examinint.entity.User;
+import seucxxy.csd.examinint.service.RoleService;
+import seucxxy.csd.examinint.service.UserService;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Controller
+public class RoleManController {
+
+    private final UserService userService;
+    private final RoleService roleService;
+
+    public RoleManController(UserService userService, RoleService roleService) {
+        this.userService = userService;
+        this.roleService = roleService;
+    }
+
+    @GetMapping("/auth/role-man")
+    public String userRoleManagement(Model model, HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        model.addAttribute("user", user);
+        model.addAttribute("users", userService.getAllUsersWithRoles());
+        model.addAttribute("roles", roleService.getAllRoles());
+        return "/auth/role-man";
+
+    }
+    @PostMapping("/auth/user-role-update")
+    public ResponseEntity<?> updateUserRole(@RequestBody Map<String, Object> payload) {
+
+
+        Map<String, Object> response = new HashMap<>();
+        try {
+            String phone = (String) payload.get("phone");
+            Integer roleId = Integer.parseInt(payload.get("roleId").toString());
+
+            userService.updateUserRole(phone, roleId);
+
+            response.put("success", true);
+            response.put("message", "角色更新成功");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "角色更新失败: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+}
+角色管理服务类
+package seucxxy.csd.examinint.service.impl;
+
+import org.springframework.stereotype.Service;
+import seucxxy.csd.examinint.entity.Role;
+import seucxxy.csd.examinint.mapper.RoleMapper;
+import seucxxy.csd.examinint.service.RoleService;
+
+import java.util.List;
+
+@Service
+public class RoleServiceImpl implements RoleService {
+
+    private final RoleMapper roleMapper;
+
+    public RoleServiceImpl(RoleMapper roleMapper) {
+        this.roleMapper = roleMapper;
+    }
+
+    @Override
+    public List<Role> getAllRoles() {
+        return roleMapper.findAllRoles();
+    }
+请用spring boot+MVC+MyBatis+vue重构上述代码的功能，要求实体类不要动，服务类尽可能不动
+}

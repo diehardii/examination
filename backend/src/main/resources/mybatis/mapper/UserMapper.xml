@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="seucxxy.csd.backend.mapper.UserMapper">
+    <resultMap id="userResultMap" type="seucxxy.csd.backend.entity.User">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="phone" column="phone"/>
+        <result property="roleId" column="role_id"/>
+        <association property="role" column="role_id"
+                     select="seucxxy.csd.backend.mapper.RoleMapper.findById"/>
+    </resultMap>
+
+
+    <select id="findUserById" resultMap="userResultMap">
+        SELECT * FROM users WHERE id = #{id}
+    </select>
+
+    <select id="findByUsername" resultMap="userResultMap">
+        SELECT * FROM users WHERE username = #{username}
+    </select>
+
+
+    <select id="findByPhone" resultMap="userResultMap">
+        SELECT * FROM users WHERE phone = #{phone}
+    </select>
+
+    <insert id="insertUser" parameterType="seucxxy.csd.backend.entity.User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (username, password, phone, role_id)
+        VALUES (#{username}, #{password}, #{phone}, #{roleId})
+    </insert>
+
+    <resultMap id="userWithRoleResultMap" type="seucxxy.csd.backend.entity.User">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="phone" column="phone"/>
+        <result property="roleId" column="role_id"/>
+        <!-- 关联角色对象 -->
+        <association property="role" column="role_id"
+                     javaType="seucxxy.csd.backend.entity.Role"
+                     select="seucxxy.csd.backend.mapper.RoleMapper.findById"/>
+    </resultMap>
+
+    <select id="findAllUsersWithRoles" resultMap="userWithRoleResultMap">
+        SELECT * FROM users
+    </select>
+
+    <!-- 更新用户角色 -->
+    <update id="updateUserRole">
+        UPDATE users
+        SET role_id = #{roleId}
+        WHERE phone = #{phone}
+    </update>
+
+
+    <update id="updatePassword">
+        UPDATE users
+        SET password = #{newPassword}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updatePhone">
+        UPDATE users
+        SET phone = #{phoneNumber}
+        WHERE id = #{id}
+    </update>
+
+
+        <select id="findUsersByExamPaperId" resultType="seucxxy.csd.backend.dto.UserExamPaperDTO">
+            SELECT
+                u.id as userId,
+                u.username as userName,
+                ud.real_name as realName,
+                un.university_name as university,
+                d.department_name as department
+            FROM examinai.user_exam_paper uep
+                     JOIN examinai.users u ON uep.username = u.username
+                     LEFT JOIN examinai.userDetail ud ON u.id = ud.user_id
+                     LEFT JOIN examinai.university un ON ud.university_id = un.university_id
+                     LEFT JOIN examinai.department d ON ud.department_id = d.department_id
+            WHERE uep.exam_paper_id = #{examPaperId}
+        </select>
+</mapper>

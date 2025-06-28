@@ -1,0 +1,1309 @@
+试卷
+package seucxxy.csd.backend.entity;
+
+
+
+import java.util.List;
+
+public class ExamPaper {
+    private Long id;
+    private String examPaperName;
+    private String examPaperContent;
+    private String examPaperDifficulty;
+    private int examPaperQuestionNumber;
+    private String examPaperSubject;
+    private List<Question> questions;
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getExamPaperName() {
+        return examPaperName;
+    }
+
+    public void setExamPaperName(String examPaperName) {
+        this.examPaperName = examPaperName;
+    }
+
+    public String getExamPaperContent() {
+        return examPaperContent;
+    }
+
+    public void setExamPaperContent(String examPaperContent) {
+        this.examPaperContent = examPaperContent;
+    }
+
+    public String getExamPaperDifficulty() {
+        return examPaperDifficulty;
+    }
+
+    public void setExamPaperDifficulty(String examPaperDifficulty) {
+        this.examPaperDifficulty = examPaperDifficulty;
+    }
+
+    public int getExamPaperQuestionNumber() {
+        return examPaperQuestionNumber;
+    }
+
+    public void setExamPaperQuestionNumber(int examPaperQuestionNumber) {
+        this.examPaperQuestionNumber = examPaperQuestionNumber;
+    }
+
+    public String getExamPaperSubject() {
+        return examPaperSubject;
+    }
+
+    public void setExamPaperSubject(String examPaperSubject) {
+        this.examPaperSubject = examPaperSubject;
+    }
+
+    public List<Question> getQuestions() {
+        return questions;
+    }
+
+    public void setQuestions(List<Question> questions) {
+        this.questions = questions;
+    }
+}
+题目
+package seucxxy.csd.backend.entity;
+
+
+
+public class Question {
+    private Long id;
+    private String questionType; // 新增字段，对应数据库question_type
+    private String type;
+    private String content;
+    private int number;
+    private Long examPaperId;
+    private String correctAnswer; // 移动到基类
+
+    // Getters and Setters
+    // 添加questionType的getter/setter
+    public String getQuestionType() {
+        return questionType;
+    }
+
+    public void setQuestionType(String questionType) {
+        this.questionType = questionType;
+    }
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public int getNumber() {
+        return number;
+    }
+
+    public void setNumber(int number) {
+        this.number = number;
+    }
+
+    public Long getExamPaperId() {
+        return examPaperId;
+    }
+
+    public void setExamPaperId(Long examPaperId) {
+        this.examPaperId = examPaperId;
+    }
+
+
+    public String getCorrectAnswer() {
+        return correctAnswer;
+    }
+
+    public void setCorrectAnswer(String correctAnswer) {
+        this.correctAnswer = correctAnswer;
+    }
+}
+单选题
+package seucxxy.csd.backend.entity;
+
+
+
+public class SingleChoiceQuestion extends Question {
+    private String optionA;
+    private String optionB;
+    private String optionC;
+    private String optionD;
+
+
+    // Getters and Setters
+    public String getOptionA() {
+        return optionA;
+    }
+
+    public void setOptionA(String optionA) {
+        this.optionA = optionA;
+    }
+
+    public String getOptionB() {
+        return optionB;
+    }
+
+    public void setOptionB(String optionB) {
+        this.optionB = optionB;
+    }
+
+    public String getOptionC() {
+        return optionC;
+    }
+
+    public void setOptionC(String optionC) {
+        this.optionC = optionC;
+    }
+
+    public String getOptionD() {
+        return optionD;
+    }
+
+    public void setOptionD(String optionD) {
+        this.optionD = optionD;
+    }
+
+}
+判断题
+package seucxxy.csd.backend.entity;
+
+
+
+public class JudgeQuestion extends Question {
+
+
+
+}
+
+用户所有的试卷
+package seucxxy.csd.backend.entity;
+
+
+public class UserExamPaper {
+    private Long id;
+    private Long examPaperId;
+    private String username;
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getExamPaperId() {
+        return examPaperId;
+    }
+
+    public void setExamPaperId(Long examPaperId) {
+        this.examPaperId = examPaperId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+}
+
+用户考试记录
+package seucxxy.csd.backend.entity;
+
+
+
+import java.time.LocalDateTime;
+
+public class UserTestRecord {
+    private Long testId;
+    private int correctNumber;
+    private int testScore;
+    private LocalDateTime testTime;
+    private Long examPaperId;
+    private Long userId;
+
+    private ExamPaper examPaper;
+    // Getters and Setters
+    public Long getTestId() {
+        return testId;
+    }
+
+    public void setTestId(Long testId) {
+        this.testId = testId;
+    }
+
+    public int getCorrectNumber() {
+        return correctNumber;
+    }
+
+    public void setCorrectNumber(int correctNumber) {
+        this.correctNumber = correctNumber;
+    }
+
+    public int getTestScore() {
+        return testScore;
+    }
+
+    public void setTestScore(int testScore) {
+        this.testScore = testScore;
+    }
+
+    public LocalDateTime getTestTime() {
+        return testTime;
+    }
+
+    public void setTestTime(LocalDateTime testTime) {
+        this.testTime = testTime;
+    }
+
+    public Long getExamPaperId() {
+        return examPaperId;
+    }
+
+    public void setExamPaperId(Long examPaperId) {
+        this.examPaperId = examPaperId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    // 新增的ExamPaper getter和setter
+    public ExamPaper getExamPaper() {
+        return examPaper;
+    }
+
+    public void setExamPaper(ExamPaper examPaper) {
+        this.examPaper = examPaper;
+    }
+}
+用户考试记录详情
+package seucxxy.csd.backend.entity;
+
+
+
+
+public class UserTestRecordDetail {
+    private Long id;
+    private String correctAnswer;
+    private int questionNumber;
+    private String questionType;
+    private String userAnswer;
+    private Long testId;
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getCorrectAnswer() {
+        return correctAnswer;
+    }
+
+    public void setCorrectAnswer(String correctAnswer) {
+        this.correctAnswer = correctAnswer;
+    }
+
+    public int getQuestionNumber() {
+        return questionNumber;
+    }
+
+    public void setQuestionNumber(int questionNumber) {
+        this.questionNumber = questionNumber;
+    }
+
+    public String getQuestionType() {
+        return questionType;
+    }
+    public void setQuestionType(String questionType) {
+        this.questionType = questionType;
+    }
+
+    public String getUserAnswer() {
+        return userAnswer;
+    }
+    public void setUserAnswer(String userAnswer) {
+        this.userAnswer = userAnswer;
+    }
+
+    public Long getTestId() {
+        return testId;
+    }
+    public void setTestId(Long testId) {
+        this.testId= testId;
+    }
+
+}
+试卷服务类
+package seucxxy.csd.backend.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import seucxxy.csd.backend.entity.*;
+import seucxxy.csd.backend.mapper.ExamPaperMapper;
+import seucxxy.csd.backend.mapper.QuestionMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@Transactional
+public class ExamPaperService {
+    private final ExamPaperMapper examPaperMapper;
+    private final QuestionMapper questionMapper;
+    private final RestTemplate restTemplate;
+
+    @Value("${coze.api.url}")
+    private String cozeApiUrl;
+
+    @Value("${coze.api.token.paper.gen}")
+    private String cozeApiToken;
+
+    @Autowired
+    public ExamPaperService(ExamPaperMapper examPaperMapper,
+                            QuestionMapper questionMapper,
+                            RestTemplate restTemplate) {
+        this.examPaperMapper = examPaperMapper;
+        this.questionMapper = questionMapper;
+        this.restTemplate = restTemplate;
+    }
+
+
+
+    public ExamPaper getExamPaperByIdWithQuestions(Long id) {
+        return examPaperMapper.findExamPaperByIdWithQuestions(id);
+    }
+
+    public List<ExamPaper> getAvailableExamPapers(String username) {
+        return examPaperMapper.findAvailableExamPapers(username);
+    }
+
+    @Transactional
+    public ExamPaper generateExamPaper(String name, String content, String difficulty, String subject) throws Exception {
+        // 检查试卷名称是否已存在
+        ExamPaper existingPaper = examPaperMapper.findExamPaperByName(name);
+        if (existingPaper != null) {
+            throw new Exception("试卷名称已存在");
+        }
+
+        // 构建请求到Coze API
+        String requestBody = String.format("{\"workflow_id\": \"7504502289714069538\", \"parameters\": {\"content\": \"%s\", \"difficulty\": \"%s\"}}",
+                content, difficulty);
+        System.out.println(requestBody);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + cozeApiToken);
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
+        ResponseEntity<String> response = restTemplate.exchange(cozeApiUrl, HttpMethod.POST, requestEntity, String.class);
+
+        // 解析响应
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readTree(response.getBody());
+        String dataValue = rootNode.path("data").asText();
+        JsonNode dataNode = mapper.readTree(dataValue);
+
+        // 解析问题
+        String questionsJson = dataNode.get("questions").asText();
+        List<Question> questions = parseQuestions(questionsJson);
+
+        // 创建并保存试卷
+        ExamPaper examPaper = new ExamPaper();
+        examPaper.setExamPaperName(name);
+        examPaper.setExamPaperContent(content);
+        examPaper.setExamPaperDifficulty(difficulty);
+        examPaper.setExamPaperQuestionNumber(questions.size());
+        examPaper.setExamPaperSubject(subject);
+
+        examPaperMapper.insertExamPaper(examPaper);
+
+        // 保存问题
+        batchInsertQuestions(questions, examPaper.getId());
+
+        // 设置关联关系
+        examPaper.setQuestions(questions);
+        return examPaper;
+    }
+
+    public void batchInsertQuestions(List<Question> questions, Long examPaperId) {
+        if (questions == null || questions.isEmpty()) {
+            System.out.println("题目列表为空，无需插入");
+            return;
+        }
+
+        int successCount = 0;
+
+        for (Question question : questions) {
+            try {
+                // 设置试卷ID
+                question.setExamPaperId(examPaperId);
+
+                // 插入主表
+                int result = questionMapper.insertQuestion(question);
+
+                if (result > 0) {
+                    successCount++;
+                    // 根据不同类型打印不同信息
+                    if (question.getQuestionType().equals("SINGLE_CHOICE")) {
+                        SingleChoiceQuestion scq = (SingleChoiceQuestion) question;
+                        System.out.printf("成功插入单选题: ID=%d, 内容=%s, 选项A=%s, 正确答案=%s%n",
+                                question.getId(), question.getContent(),
+                                scq.getOptionA(), question.getCorrectAnswer());
+                    } else if (question.getQuestionType().equals("JUDGE")) {
+                        System.out.printf("成功插入判断题: ID=%d, 内容=%s, 正确答案=%s%n",
+                                question.getId(), question.getContent(),
+                                question.getCorrectAnswer());
+                    }
+                } else {
+                    System.out.println("插入失败: " + question.getContent());
+                }
+            } catch (Exception e) {
+                System.out.println("插入题目异常: " + question.getContent() + ", 错误: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        System.out.printf("插入完成! 成功插入%d条，共%d条%n", successCount, questions.size());
+    }
+
+    private List<Question> parseQuestions(String questionsJson) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode questionsNode = mapper.readTree(questionsJson);
+        List<Question> questions = new ArrayList<>();
+
+        for (JsonNode questionNode : questionsNode) {
+            String type = questionNode.path("type").asText();
+            String content = questionNode.path("question").asText();
+            int number = questionNode.path("number").asInt();
+
+            if ("单选题".equals(type)) {
+                SingleChoiceQuestion scq = new SingleChoiceQuestion();
+                scq.setType(type);
+                scq.setQuestionType("SINGLE_CHOICE");
+                scq.setContent(content);
+                scq.setNumber(number);
+                scq.setOptionA(questionNode.path("optionA").asText());
+                scq.setOptionB(questionNode.path("optionB").asText());
+                scq.setOptionC(questionNode.path("optionC").asText());
+                scq.setOptionD(questionNode.path("optionD").asText());
+                scq.setCorrectAnswer(questionNode.path("correctAnswer").asText());
+
+                questions.add(scq);
+            } else if ("是非题".equals(type)) {
+                JudgeQuestion jq = new JudgeQuestion();
+                jq.setType(type);
+                jq.setQuestionType("JUDGE");
+                jq.setContent(content);
+                jq.setNumber(number);
+                jq.setCorrectAnswer(questionNode.path("correctAnswer").asText());
+                questions.add(jq);
+            }
+        }
+        System.out.println(questions.toString());
+        return questions;
+    }
+}
+试题服务类
+package seucxxy.csd.backend.service;
+
+import org.springframework.stereotype.Service;
+import seucxxy.csd.backend.entity.*;
+import seucxxy.csd.backend.mapper.*;
+
+import java.util.List;
+
+
+@Service
+public class QuestionService {
+
+    private final QuestionMapper questionMapper;
+
+    public QuestionService(QuestionMapper questionMapper) {
+           this.questionMapper = questionMapper;
+    }
+
+      public List<Question> getQuestionsByExamPaperId(long examPaperId) {
+        return questionMapper.findQuestionsByExamPaperId(examPaperId);
+    }
+
+    public Question getQuestionByExamPaperIdAndNumber(long examPaperId, int number) {
+        return questionMapper.findQuestionByExamPaperIdAndNumber(examPaperId, number);
+    }
+
+
+}
+用户试卷关系服务类
+package seucxxy.csd.backend.service;
+
+import seucxxy.csd.backend.entity.*;
+import seucxxy.csd.backend.mapper.*;
+
+import org.springframework.http.*;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import java.util.List;
+
+@Service
+public class UserExamPaperService {
+    private final ExamPaperMapper examPaperMapper;
+    private final UserExamPaperMapper userExamPaperMapper;
+    private final RestTemplate restTemplate;
+
+
+
+    public UserExamPaperService(ExamPaperMapper examPaperMapper,
+                                UserExamPaperMapper userExamPaperMapper,
+                                RestTemplate restTemplate) {
+        this.examPaperMapper = examPaperMapper;
+        this.userExamPaperMapper = userExamPaperMapper;
+        this.restTemplate = restTemplate;
+    }
+
+
+    public List<ExamPaper> getUserExamPapers(String username) {
+        return userExamPaperMapper.findExamPapersByUsername(username);
+    }
+    public void saveUserExamPapers(String username, List<Long> examPaperIds) {
+        // 先删除用户原有的试卷关系
+        userExamPaperMapper.deleteByUsername(username);
+
+        // 添加新的试卷关系
+        examPaperIds.forEach(examPaperId -> {
+            UserExamPaper userExamPaper = new UserExamPaper();
+            userExamPaper.setExamPaperId(examPaperId);
+            userExamPaper.setUsername(username);
+            userExamPaperMapper.insert(userExamPaper);
+        });
+    }
+
+}
+用户考试记录服务类
+package seucxxy.csd.backend.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import seucxxy.csd.backend.entity.*;
+import seucxxy.csd.backend.mapper.ExamPaperMapper;
+import seucxxy.csd.backend.mapper.UserTestRecordDetailMapper;
+import seucxxy.csd.backend.mapper.UserTestRecordMapper;
+
+import java.util.List;
+import java.util.Map;
+
+@Service
+public class UserTestRecordService {
+
+    @Autowired
+    private ExamPaperMapper examPaperMapper;
+    @Autowired
+    private UserTestRecordMapper userTestRecordMapper;
+
+    @Autowired
+    private UserTestRecordDetailMapper userTestRecordDetailMapper;
+
+    public void saveTestRecord(UserTestRecord record, List<Question> questions,
+                               Map<Integer, String> singleChoiceAnswers,
+                               Map<Integer, String> judgeAnswers) {
+        // 保存主记录
+        userTestRecordMapper.insertUserTestRecord(record);
+
+        // 保存详细记录
+        for (Question q : questions) {
+            UserTestRecordDetail detail = new UserTestRecordDetail();
+            detail.setTestId(record.getTestId());
+            detail.setQuestionNumber(q.getNumber());
+            detail.setQuestionType(q instanceof SingleChoiceQuestion ? "SINGLE_CHOICE" : "JUDGE");
+            detail.setCorrectAnswer(q.getCorrectAnswer());
+
+            if (q instanceof SingleChoiceQuestion) {
+                detail.setUserAnswer(singleChoiceAnswers.get(q.getNumber()));
+                System.out.println("userAnswer"+singleChoiceAnswers.get(q.getNumber()));
+            } else if (q instanceof JudgeQuestion) {
+                detail.setUserAnswer(judgeAnswers.get(q.getNumber()));
+                System.out.println("userAnswer"+judgeAnswers.get(q.getNumber()));
+            }
+
+            System.out.println("detail"+detail.getUserAnswer());
+            userTestRecordDetailMapper.insertUserTestRecordDetail(detail);
+        }
+    }
+
+    public List<UserTestRecord> getUserTestRecordsByUsername(String username) {
+        List<UserTestRecord> records = userTestRecordMapper.findUserTestRecordsByUsernameOrderByTestTimeDesc(username);
+
+        // 2. 为每条记录加载关联的ExamPaper
+        records.forEach(record -> {
+            if (record.getExamPaperId() != null) {
+                ExamPaper paper = examPaperMapper.findExamPaperById(record.getExamPaperId());
+                record.setExamPaper(paper);
+            }
+        });
+
+        return records;
+    }
+
+
+    public List<UserTestRecord> getUserTestRecordsByUsernameAndSubject(String username, String subject) {
+        return userTestRecordMapper.findUserTestRecordsByUsernameAndSubject(username, subject);
+    }
+
+
+
+}
+
+
+
+试卷分析服务
+package seucxxy.csd.examinint.service;
+
+
+
+import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
+import seucxxy.csd.examinint.entity.*;
+import seucxxy.csd.examinint.mapper.*;
+import seucxxy.csd.examinint.exception.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Service
+public class QuestionAnaService {
+
+    @Autowired
+    private UserTestRecordMapper userTestRecordMapper;
+
+    @Autowired
+    private QuestionMapper questionMapper;
+
+    @Autowired
+    private UserTestRecordDetailMapper userTestRecordDetailMapper;
+
+    @Autowired
+    private ExamPaperMapper examPaperMapper;
+
+
+
+    public List<UserTestRecordDetail> getUserTestRecordDetail(long userTestRecordId) {
+        return userTestRecordDetailMapper.findUserTestRecordDetailsByTestRecordId(userTestRecordId);
+    }
+
+    public List<Question> getQuestionsForUserTestRecord(Long userTestRecordId, User user) {
+        UserTestRecord record = userTestRecordMapper.findUserTestRecordByTestIdAndUserId(userTestRecordId, user.getId());
+        if (record == null) {
+            throw new ResourceNotFoundException("Test record not found");
+        }
+        return questionMapper.findQuestionsByExamPaperId(record.getExamPaperId());
+    }
+
+
+    public Map<String, Object> getQuestionDetails(Long userTestRecordId, int questionNumber, User user) {
+        UserTestRecord record = userTestRecordMapper.findUserTestRecordByTestIdAndUserId(userTestRecordId, user.getId());
+        if (record == null) {
+            throw new ResourceNotFoundException("Test record not found");
+        }
+
+        Question question = questionMapper.findQuestionByExamPaperIdAndNumber(record.getExamPaperId(), questionNumber);
+        if (question == null) {
+            throw new ResourceNotFoundException("Question not found");
+        }
+
+        UserTestRecordDetail detail = userTestRecordDetailMapper.findUserTestRecordDeailByUserTestRecordIdAndQuestionNumber(
+                userTestRecordId, questionNumber);
+        if (detail == null) {
+            throw new ResourceNotFoundException("User answer not found");
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("question", question);
+        result.put("detail", detail);
+
+        if (question instanceof SingleChoiceQuestion) {
+            SingleChoiceQuestion scq = (SingleChoiceQuestion) question;
+
+                Map<String, String> options = new HashMap<>();
+                options.put("A", scq.getOptionA());
+                options.put("B", scq.getOptionB());
+                options.put("C", scq.getOptionC());
+                options.put("D", scq.getOptionD());
+                result.put("options", options);
+            }
+
+
+        return result;
+    }
+
+    public String analyzeQuestion(Question question, String userAnswer, String correctAnswer) throws JSONException, JSONException {
+        JSONObject json = new JSONObject();
+        json.put("question", question.getContent());
+        json.put("correctAnswer", correctAnswer);
+        json.put("userAnswer", userAnswer);
+
+        String jsonInputString = "{\"workflow_id\": \"7507949205416706100\", \"parameters\": {\"question\": " + json.toString() + "}}";
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.coze.cn/v1/workflow/run"))
+                .header("Content-Type", "application/json; utf-8")
+                .header("Authorization", "Bearer pat_spGrBcliriNwqjJtljrXQ29Y2yNTWLcjGvMtzSh6EdQSxgO9K8VcKviNuEcIYEYs")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonInputString))
+                .build();
+
+        try {
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(response.body());
+            String dataValue = rootNode.path("data").asText();
+
+            return dataValue.replaceAll(".*\"analysis\":\"", "")
+                    .replaceAll("\"}$", "")
+                    .replace("\\n", "<br/>");
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to analyze question", e);
+        }
+    }
+
+    public List<Question> getQuestionsForUserTestRecordWithDetails(Long testRecordId, User user) {
+        UserTestRecord record = userTestRecordMapper.findUserTestRecordByTestIdAndUserId(testRecordId, user.getId());
+        if (record == null) {
+            throw new ResourceNotFoundException("Test record not found");
+        }
+
+        List<Question> questions = questionMapper.findQuestionsByExamPaperId(record.getExamPaperId());
+
+
+
+        return questions;
+    }
+}
+试卷分析控制器
+package seucxxy.csd.examinint.controller;
+
+
+import jakarta.servlet.http.HttpSession;
+import seucxxy.csd.examinint.entity.*;
+import seucxxy.csd.examinint.service.QuestionAnaService;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import seucxxy.csd.examinint.service.UserTestRecordService;
+
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Controller
+@RequestMapping("/exam-paper")
+public class QuestionAnaController {
+
+    @Autowired
+    private QuestionAnaService questionAnaService;
+
+    @Autowired
+    private UserTestRecordService userTestRecordService;
+
+    @GetMapping("/question-ana")
+    public String showAnalysisPage(HttpSession session, Model model) {
+        User user = (User) session.getAttribute("user");
+        model.addAttribute("user", user);
+        String username = user.getUsername();
+        List<UserTestRecord> records = userTestRecordService.getUserTestRecordsByUsername(user.getUsername());
+        model.addAttribute("userTestRecords", records);
+
+        if (!records.isEmpty()) {
+            Long firstRecordId = records.get(0).getTestId();
+            model.addAttribute("selectedTestId", firstRecordId);
+            model.addAttribute("questions", questionAnaService.getQuestionsForUserTestRecord(firstRecordId, user));
+        }
+
+        return "/exam-paper/question-ana";
+    }
+
+    @GetMapping("/questions-with-answers")
+    @ResponseBody
+    public List<Map<String, Object>> getQuestionsWithAnswers(
+            @RequestParam Long userTestRecordId,
+            HttpSession session) {
+
+        User user = (User) session.getAttribute("user");
+
+        // 1. 获取考试记录的所有题目（包含具体子类信息）
+        List<Question> questions = questionAnaService.getQuestionsForUserTestRecordWithDetails(
+                userTestRecordId, user);
+
+        // 2. 获取用户的答题详情
+        List<UserTestRecordDetail> details = questionAnaService.getUserTestRecordDetail(
+                userTestRecordId);
+
+        // 3. 合并数据
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (int i = 0; i < questions.size(); i++) {
+            Question q = questions.get(i);
+            UserTestRecordDetail detail = details.stream()
+                    .filter(d -> d.getQuestionNumber() == q.getNumber()) // 使用题目编号匹配
+                    .findFirst()
+                    .orElse(null);
+
+            Map<String, Object> item = new HashMap<>();
+            item.put("number", q.getNumber());
+            item.put("content", q.getContent());
+            item.put("correctAnswer", q.getCorrectAnswer());
+            item.put("userAnswer", detail != null ? detail.getUserAnswer() : "未作答");
+            item.put("type", q.getType());
+
+            result.add(item);
+        }
+
+        return result;
+    }
+
+    @PostMapping("/analyze")
+    public String analyzeQuestion(
+            @RequestParam Long userTestRecordId,
+            @RequestParam int questionNumber,
+            HttpSession session, Model model) throws Exception {
+        User user = (User) session.getAttribute("user");
+
+        Map<String, Object> details = questionAnaService.getQuestionDetails(
+                userTestRecordId, questionNumber, user);
+
+        Question question = (Question) details.get("question");
+        UserTestRecordDetail detail = (UserTestRecordDetail) details.get("detail");
+
+        String analysisResult = questionAnaService.analyzeQuestion(
+                question, detail.getUserAnswer(), detail.getCorrectAnswer());
+
+        session.setAttribute("analysisData", analysisResult);
+        session.setAttribute("question", question);
+        session.setAttribute("detail", detail);
+        session.setAttribute("options", details.get("options"));
+
+        model.addAttribute("user", user);
+        return "redirect:/exam-paper/question-ana-result";
+    }
+
+    @GetMapping("/question-ana-result")
+    public String showAnalysisResult(Model model, HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        model.addAttribute("user", user);
+        model.addAttribute("analysisData", session.getAttribute("analysisData"));
+        model.addAttribute("question", session.getAttribute("question"));
+        model.addAttribute("detail", session.getAttribute("detail"));
+        model.addAttribute("options", session.getAttribute("options"));
+
+        session.removeAttribute("analysisData");
+        session.removeAttribute("question");
+        session.removeAttribute("detail");
+        session.removeAttribute("options");
+
+        return "/exam-paper/question-ana-result";
+    }
+}
+试卷分析主页面，从用户考试记录选中某个试卷的某个题目
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>考试记录分析</title>
+    <link rel="stylesheet" href="/css/menuStyle.css">
+    <style>
+        /* 统一表格容器样式 */
+        .paper-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            gap: 20px;
+            height: 65vh;
+        }
+
+        /* 考试记录列表容器 */
+        .exam-list {
+            flex: 1;
+            background-color: #f0f8ff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* 题目详情容器 */
+        .question-detail {
+            flex: 1;
+            background-color: #f0f8ff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* 统一表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            table-layout: auto;
+        }
+
+        /* 表头样式 */
+        thead tr {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color:#f8f9fa !important;
+            background-image: linear-gradient(to bottom, #f8f9fa, #f8f9fa);
+            user-select: none;
+        }
+
+        thead th {
+            padding: 12px 15px;
+            text-align: left;
+            color: #003366;
+            font-weight: 600;
+            border-bottom: 2px solid #d8bfd8;
+            white-space: nowrap;
+        }
+
+        /* 表格内容样式 */
+        tbody tr {
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        tbody tr td {
+            padding: 12px 15px;
+            color: #333;
+        }
+
+        /* 高亮样式 */
+        tbody tr.highlight {
+            background-color: #e6f7ff !important;
+            color: #003366 !important;
+        }
+
+        tbody tr:hover:not(.highlight) {
+            background-color: #f8f9fa;
+        }
+
+        /* 滚动条样式 */
+        .exam-list::-webkit-scrollbar,
+        .question-detail::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .exam-list::-webkit-scrollbar-track,
+        .question-detail::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .exam-list::-webkit-scrollbar-thumb,
+        .question-detail::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        /* 按钮样式 */
+        .submit-btn-container {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .submit-btn {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="fragments/menu :: menu"></div>
+
+<div class="content">
+    <h1 class="header">试题分析：请选择要分析的试题</h1>
+
+    <div class="paper-container">
+        <!-- 考试记录列表 -->
+        <div class="exam-list">
+            <table>
+                <thead>
+                <tr>
+                    <th>试卷名称</th>
+                    <th>考试时间</th>
+                    <th>得分</th>
+                </tr>
+                </thead>
+                <tbody id="examList">
+                <tr th:each="record : ${userTestRecords}"
+                    th:data-test-id="${record.testId}"
+                    th:onclick="'highlightExamRow(this, ' + ${record.testId} + ')'">
+                    <td th:text="${record.examPaper.examPaperName}"></td>
+                    <td th:text="${#temporals.format(record.testTime, 'yyyy-MM-dd HH:mm')}"></td>
+                    <td th:text="${record.testScore}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 题目详情列表 -->
+        <div class="question-detail">
+            <table>
+                <thead>
+                <tr>
+                    <th>题号</th>
+                    <th>题目</th>
+                    <th>用户答案</th>
+                    <th>正确答案</th>
+                </tr>
+                </thead>
+                <tbody id="questionDetails">
+                <tr><td colspan="4">请选择考试记录查看详情</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="submit-btn-container">
+        <button class="submit-btn" onclick="submitAnalysis()">分析选中题目</button>
+    </div>
+
+    <form id="analysisForm" method="post" th:action="@{/exam-paper/analyze}">
+        <input type="hidden" id="userTestRecordId" name="userTestRecordId" th:value="${selectedTestId}">
+        <input type="hidden" id="questionNumber" name="questionNumber">
+    </form>
+</div>
+
+<script>
+    let selectedTestId = null;
+    let selectedQuestion = null;
+
+    // 高亮考试记录行
+    function highlightExamRow(row, testId) {
+        // 清除所有高亮
+        document.querySelectorAll('#examList tr').forEach(tr => {
+            tr.classList.remove('highlight');
+        });
+        // 设置新选中
+        row.classList.add('highlight');
+        selectedTestId = testId;
+        loadQuestionDetails(testId);
+    }
+
+    // 高亮题目行
+    function highlightQuestionRow(row) {
+        // 清除所有高亮
+        document.querySelectorAll('#questionDetails tr').forEach(tr => {
+            tr.classList.remove('highlight');
+        });
+        // 设置新选中
+        row.classList.add('highlight');
+        // 记录选中题目
+        selectedQuestion = {
+            number: row.cells[0].textContent,
+            question: row.cells[1].textContent,
+            correctAnswer: row.cells[3].textContent,
+            userAnswer: row.cells[2].textContent
+        };
+    }
+
+    // 加载题目详情
+    function loadQuestionDetails(testId) {
+        const detailBody = document.getElementById('questionDetails');
+        detailBody.innerHTML = '<tr><td colspan="4">加载中...</td></tr>';
+
+        // 使用新的端点获取带答案的数据
+        fetch(`/exam-paper/questions-with-answers?userTestRecordId=${testId}`)
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP错误! 状态: ${response.status}`);
+                return response.json();
+            })
+            .then(questions => {
+                let html = questions.map(q => `
+                <tr onclick="highlightQuestionRow(this)"
+                    data-question-number="${q.number}">
+                    <td>${q.number}</td>
+                    <td>${q.content || '无题目内容'}</td>
+                    <td>${q.userAnswer || '未作答'}</td>
+                    <td>${q.correctAnswer}</td>
+                </tr>
+            `).join('');
+
+                detailBody.innerHTML = html || '<tr><td colspan="4">没有题目数据</td></tr>';
+
+                // 默认选中第一条
+                const firstRow = detailBody.querySelector('tr');
+                if (firstRow) highlightQuestionRow(firstRow);
+            })
+            .catch(error => {
+                console.error('加载失败:', error);
+                detailBody.innerHTML = `
+                <tr>
+                    <td colspan="4">
+                        加载失败: ${error.message}<br>
+                        <button onclick="loadQuestionDetails(${testId})">重试</button>
+                    </td>
+                </tr>
+            `;
+            });
+    }
+    // 提交分析
+    function submitAnalysis() {
+        if (!selectedQuestion) {
+            alert('请先选择要分析的题目');
+            return;
+        }
+
+        document.getElementById('questionNumber').value = selectedQuestion.number;
+        document.getElementById('analysisForm').submit();
+    }
+
+    // 初始化选中第一个考试记录
+    window.onload = () => {
+        const firstRow = document.querySelector('#examList tr:first-child');
+        if (firstRow) {
+            const testId = firstRow.getAttribute('data-test-id');
+            highlightExamRow(firstRow, testId);
+        }
+    };
+</script>
+</body>
+</html>
+给出分析结果页面
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>试题分析结果</title>
+    <link rel="stylesheet" href="/css/menuStyle.css">
+    <style>
+    /* 按钮样式 */
+    .back-btn-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 20px;
+    }
+
+    .back-btn {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s;
+    }
+
+    .back-btn:hover {
+    background-color: #45a049;
+    }
+    </style>
+
+</head>
+<body>
+<div th:replace="fragments/menu :: menu"></div>
+
+<div class="content">
+    <h1 class="header">试题分析结果</h1>
+
+    <div class="question-info">
+        <h3>题目信息</h3>
+        <p><strong>题号：</strong><span th:text="${question.number}"></span></p>
+        <p><strong>题目：</strong><span th:text="${question.content}"></span></p>
+
+
+        <div th:if="${question.getQuestionType()=='SINGLE_CHOICE'}">
+            <p><strong>选项：</strong></p>
+            <ul>
+                <li th:each="entry : ${options}">
+                    <strong th:text="${entry.key} + ':'"></strong>
+                    <span th:text="${entry.value}"></span>
+                </li>
+            </ul>
+        </div>
+
+        <p><strong>你的答案：</strong><span th:text="${detail.userAnswer}"></span></p>
+        <p><strong>正确答案：</strong><span th:text="${detail.correctAnswer}"></span></p>
+    </div>
+
+    <div class="analysis-result" th:utext="${analysisData}"></div>
+
+    <div class="back-btn-container">
+        <a href="/exam-paper/question-ana" class="back-btn">返回分析页面</a>
+    </div>
+</div>
+</body>
+</html>>
+
+上述代码完成分析某个用户的参与的考试试卷的某道题目，从用户参加过的所有考试的试卷选中一个试卷，再从试卷中选中一个题目进行分析
+请用Spring boot+MVC+Mybatis+vue进行重构，实体类不要动，服务类尽可能不要动，请给出完整的代码

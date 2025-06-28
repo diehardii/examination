@@ -1,0 +1,261 @@
+
+
+
+create table university(
+ university_id       int auto_increment
+        primary key,
+ university_name varchar(50)
+);
+
+create table department(
+ department_id      int auto_increment
+        primary key,
+university_id int,
+ department_name varchar(50),
+FOREIGN KEY (university_id) REFERENCES examinai.university (university_id)
+);
+
+CREATE TABLE examinai.userDetail
+(
+    user_id bigint PRIMARY KEY,
+    identity_id varchar(20) null,
+    gender varchar(4) null,
+    email varchar(50) null,
+    address varchar(50) null,
+    university_id int null,
+    department_id int null,
+    occupation varchar(10) null,
+    real_name varch(50) null,
+    FOREIGN KEY (user_id) REFERENCES examinai.users (id),
+    FOREIGN KEY (university_id) REFERENCES examinai.university (university_id),
+    FOREIGN KEY (department_id) REFERENCES examinai.department (department_id)
+);
+已经有一个实体类
+package seucxxy.csd.backend.entity;
+
+
+
+import lombok.Data;
+
+@Data
+public class User {
+    private Long id;
+    private String username;
+    private String password;
+    private String phone;
+    private Integer roleId;
+
+    // 关联的角色对象
+    private Role role;
+}
+<template>
+  <div class="app-container">
+    <!-- 引入侧边栏组件 -->
+    <SideBarMenu />
+
+    <!-- 右侧内容区 -->
+    <div class="main-content">
+      <div class="content">
+        <div class="card">
+          <h1 class="header">请填写试卷的要求</h1>
+
+          <!-- 表单和图片容器 -->
+          <div class="form-image-container">
+            <!-- 左边：表单 -->
+            <div class="form-section">
+              <form @submit.prevent="submitForm">
+                试卷名称: <input type="text" v-model="form.name" required><br><br>
+                <span class="hint">例如：C++期末卷，试卷名称不能重复</span><br><br>
+                试卷内容: <input type="text" v-model="form.content" required><br><br>
+                <span class="hint">请提出详细要求，例如：C++基础语法知识</span><br><br>
+                难度:
+                <select v-model="form.difficulty" required>
+                  <option value="">-- 请选择难度 --</option>
+                  <option value="简单">简单</option>
+                  <option value="中等">中等</option>
+                  <option value="困难">困难</option>
+                </select><br><br>
+
+                科目：
+                <select id="subject" v-model="form.subject" class="select-control" required>
+                  <option value="">-- 请选择科目 --</option>
+                  <option v-for="subject in subjects"
+                          :key="subject.subjectId"
+                          :value="subject.subjectName">
+                    {{ subject.subjectName }}
+                  </option>
+                </select>
+
+                <br><br><br>
+                <input type="submit" value="生成试卷">
+
+                <div v-if="error" class="error">{{ error }}</div>
+                <div v-if="success" class="success">{{ success }}</div>
+              </form>
+            </div>
+
+            <!-- 右边：图片 -->
+            <div class="image-section">
+              <img src="@/assets/images/test.jpg" alt="试卷示意图">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import { generateExamPaper } from '@/service/examPaperService';
+import { getSubjects } from '@/service/subjectService';
+import SideBarMenu from '@/components/SideBarMenu.vue'; // 导入侧边栏组件
+
+export default {
+  name: 'PaperGen',
+  components: {
+    SideBarMenu // 注册组件
+  },
+  data() {
+    return {
+      form: {
+        name: '',
+        content: '',
+        difficulty: '',
+        subject: ''
+      },
+      subjects: [],
+      error: '',
+      success: ''
+    };
+  },
+  async created() {
+    try {
+      this.subjects = await getSubjects();
+    } catch (error) {
+      this.error = '获取科目列表失败: ' + error.message;
+    }
+  },
+  methods: {
+    async submitForm() {
+      this.error = '';
+      this.success = '';
+
+      try {
+        const paperData = await generateExamPaper(this.form);
+        if (paperData?.id) {
+          this.$router.push({
+            name: 'PaperShow',
+            params: { id: paperData.id }
+          });
+        } else {
+          throw new Error('生成的试卷数据不完整，缺少ID');
+        }
+      } catch (error) {
+        this.error = '生成试卷时出错: ' + (error.response?.data?.error || error.message);
+      }
+    }
+  }
+};
+</script>
+
+<style scoped>
+/* 新增的布局样式 */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  background-color: #f5f5f5;
+  margin-left: 260px; /* 等于侧边栏宽度 */
+  width: calc(100% - 260px);
+}
+
+/* 原有样式保持不变 */
+.content {
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.header {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 24px;  /* 设置具体像素值 */
+}
+
+.form-image-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.form-section {
+  width: 50%;
+}
+
+.image-section {
+  width: 45%;
+}
+
+.image-section img {
+  max-width: 100%;
+  height: auto;
+}
+
+input[type="text"], select {
+  width: 100%;
+  padding: 8px;
+  margin: 5px 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+input[type="submit"] {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+input[type="submit"]:hover {
+  background-color: #45a049;
+}
+
+.hint {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.error {
+  color: red;
+  margin-top: 10px;
+}
+
+.success {
+  color: green;
+  margin-top: 10px;
+}
+
+.select-control {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+</style>
+请参照上面这个网页的样式和展示模式，左边是菜单，右边是工作区，开发一个用户资料录入界面，
+为当前已经登录的这个用户 users已经有一条记录了，录入对应的userDetail里的所有字段并保存，如果userDetail里已经有了信息，那么初始加载时
+展示所有信息供修改，下面有一个保存按钮，点击保存后，弹出保存成功，更新到数据库中，
+请用Springboot+MVC+MyBatis+vue的前后端分离框架来实现，
+请给出完整的代码，每段代码的文件名，存放的目录都标识清楚
+

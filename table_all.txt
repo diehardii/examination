@@ -1,0 +1,85 @@
+create table examinai.users
+(
+    id       bigint auto_increment
+        primary key,
+    password varchar(255) not null,
+    phone    varchar(255) not null,
+    username varchar(255) not null,
+    role_id  int          not null,
+    constraint UKdu5v5sr43g5bfnji4vb8hg5s3
+        unique (phone),
+    constraint UKr43af9ap4edm43mmtq01oddj6
+        unique (username),
+    constraint FKp56c1712k691lhsyewcssf40f
+        foreign key (role_id) references examinai.roles (role_id)
+);
+
+create table examinai.roles
+(
+    role_id   int auto_increment
+        primary key,
+    role_name varchar(255) not null,
+    constraint UK716hgxp60ym1lifrdgp67xt5k
+        unique (role_name)
+);
+
+create table examinai.exam_paper
+(
+    id                         bigint auto_increment
+        primary key,
+    exam_paper_content         varchar(255) null,
+    exam_paper_difficulty      varchar(255) null,
+    exam_paper_name            varchar(255) null,
+    exam_paper_question_number int          not null,
+    exam_paper_subject         varchar(255) null
+);
+
+create table examinai.exam_paper_subject
+(
+    id   bigint auto_increment
+        primary key,
+    name varchar(255) null,
+    constraint UKj2c42cou2ias7dwe8hso2gk1q
+        unique (name)
+);
+
+create table examinai.user_exam_paper
+(
+    id            bigint auto_increment
+        primary key,
+    exam_paper_id bigint       null,
+    username      varchar(255) null,
+    constraint FKrc0jkhn2itdd06u0bvdcq5lh4
+        foreign key (exam_paper_id) references examinai.exam_paper (id),
+    constraint fk_user_exam_paper_exam_paper_id
+        foreign key (exam_paper_id) references examinai.exam_paper (id)
+);
+
+create table examinai.user_test_record
+(
+    test_id        bigint auto_increment
+        primary key,
+    correct_number int         not null,
+    test_score     int         not null,
+    test_time      datetime(6) null,
+    exam_paper_id  bigint      null,
+    user_id        bigint      null,
+    constraint FK48e04bj0tfmk4nve3a9bhm8y2
+        foreign key (user_id) references examinai.users (id),
+    constraint FKqvg9t1cjs292pmssydsxc7w4b
+        foreign key (exam_paper_id) references examinai.exam_paper (id)
+);
+
+create table examinai.user_test_record_detail
+(
+    id              bigint auto_increment
+        primary key,
+    correct_answer  varchar(255) null,
+    question_number int          not null,
+    question_type   varchar(255) null,
+    user_answer     varchar(255) null,
+    test_id         bigint       null,
+    constraint FKsirtu6x98fbuaqm9o0gcyrjl4
+        foreign key (test_id) references examinai.user_test_record (test_id)
+);
+

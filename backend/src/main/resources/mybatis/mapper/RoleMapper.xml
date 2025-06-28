@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="seucxxy.csd.backend.mapper.RoleMapper">
+    <resultMap id="roleResultMap" type="seucxxy.csd.backend.entity.Role">
+        <id property="roleId" column="role_id"/>
+        <result property="roleName" column="role_name"/>
+    </resultMap>
+
+    <select id="findById" resultMap="roleResultMap">
+        SELECT * FROM roles WHERE role_id = #{roleId}
+    </select>
+
+    <select id="findByName" resultMap="roleResultMap">
+        SELECT * FROM roles WHERE role_name = #{roleName}
+    </select>
+
+    <select id="findAllRoles" resultMap="roleResultMap">
+        SELECT * FROM roles
+    </select>
+</mapper>

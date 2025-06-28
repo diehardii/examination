@@ -1,0 +1,6 @@
+.el-message-box__btns .el-button--primary {
+    --el-button-bg-color: #67C23A;
+    --el-button-border-color: #67C23A;
+    --el-button-hover-bg-color: #5daf34;
+    --el-button-hover-border-color: #5daf34;
+}

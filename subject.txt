@@ -1,0 +1,521 @@
+package seucxxy.csd.backend.entity;
+
+
+public class Subject {
+    private int subjectId;
+    private String subjectName;
+
+
+
+    public Subject(String subjectName) {
+        this.subjectName = subjectName;
+    }
+
+    public int getSubjectId() {
+        return subjectId;
+    }
+
+    public void setSubjectId(int subjectId) {
+        this.subjectId = subjectId;
+    }
+
+    public String getSubjectName() {
+        return subjectName;
+    }
+
+    public void setSubjectName(String subjectName) {
+        this.subjectName = subjectName;
+    }
+}
+科目管理服务类
+package seucxxy.csd.examinint.service.impl;
+
+import org.springframework.stereotype.Service;
+import seucxxy.csd.examinint.entity.Subject;
+import seucxxy.csd.examinint.mapper.SubjectMapper;
+import seucxxy.csd.examinint.service.SubjectService;
+
+import java.util.List;
+
+@Service
+public class SubjectServiceImpl implements SubjectService {
+
+    private final SubjectMapper subjectMapper;
+
+    public SubjectServiceImpl(SubjectMapper subjectMapper) {
+        this.subjectMapper = subjectMapper;
+    }
+
+    @Override
+    public List<Subject> getAllSubjects() {
+        return subjectMapper.findAllSubjects();
+    }
+    @Override
+    public List<String> getSubjectsForUser(String username) {
+        return subjectMapper.findSubjectsByUsername(username);
+    }
+
+    @Override
+    public void addSubject(Subject subject) {
+        if (subjectMapper.findSubjectBySubjectName(subject.getSubjectName()) != null) {
+            throw new IllegalArgumentException("科目名称已存在");
+        }
+        subjectMapper.insertSubject(subject);
+    }
+
+    @Override
+    public void updateSubject(String oldName, Subject newSubject) {
+        Subject existingSubject = subjectMapper.findSubjectBySubjectName(oldName);
+        if (existingSubject == null) {
+            throw new IllegalArgumentException("要修改的科目不存在");
+        }
+
+        // 检查新名称是否已被其他科目使用
+        Subject subjectWithNewName = subjectMapper.findSubjectBySubjectName(newSubject.getSubjectName());
+        if (subjectWithNewName != null && !(subjectWithNewName.getSubjectId()==existingSubject.getSubjectId())) {
+            throw new IllegalArgumentException("新科目名称已被其他科目使用");
+        }
+
+        subjectMapper.updateSubject(existingSubject.getSubjectId(), newSubject);
+    }
+
+    @Override
+    public void deleteSubject(String subjectName) {
+        Subject subject = subjectMapper.findSubjectBySubjectName(subjectName);
+        if (subject == null) {
+            throw new IllegalArgumentException("要删除的科目不存在");
+        }
+        subjectMapper.deleteSubject(subject.getSubjectId());
+    }
+}
+科目管理主页面
+<!-- src/main/resources/templates/subjects.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>考试科目管理</title>
+
+  <style>
+    /* 保持与您原始代码完全相同的CSS样式 */
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+
+    .app-container {
+      display: flex;
+      min-height: 100vh; }
+
+
+
+    .sidebar {
+      width: 250px;
+      background-color: #162447;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      position: fixed;
+      left: 0;
+      top: 0;
+      padding-top: 20px;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      padding: 20px;
+      font-size: 22px;
+      letter-spacing: 1px;
+      border-bottom: 1px solid #2d3436;
+      margin-bottom: 30px;
+    }
+
+    .menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      flex: 1;
+    }
+
+    .menu li {
+      padding: 15px 20px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      font-size: 16px;
+    }
+
+    .menu li:hover {
+      background-color: #1f4068;
+    }
+
+    .menu li a {
+      color: white;
+      text-decoration: none;
+      display: block;
+    }
+
+    /* 主内容区域 */
+    .main-content {
+      margin-left: 250px;
+      flex: 1;
+      padding: 20px;
+      background-color: #0f1a2c;
+    }
+
+    .container {
+      max-width: 100%;
+      margin: 0;
+      margin: 0 auto; /* 添加居中对齐 */
+      text-align: center; /* 使标题居中 */
+    }
+
+    h2 { color: #e0e0e0; }
+
+    /* 表格容器宽度控制 */
+    .table-container {
+      width: 50%; /* 表格宽度改为原来的1/2 */
+      margin: 20px auto; /* 上下间距20px，左右自动居中 */
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #334155;
+    }
+
+    th {
+      background-color: #4a6fa5;
+      color: #0a2463;
+      text-align: left;
+    }
+
+    td {
+      background-color: #c8d8e4;
+      color: #0a2463;
+      text-align: left;
+    }
+
+    tr:hover {
+      background-color: #a8c6ea;
+    }
+
+    /* 操作列宽度增大 */
+    th:last-child, td:last-child {
+      width: 30%; /* 操作列宽度增大 */
+      text-align: center;
+    }
+
+    .action-btn {
+      padding: 6px 12px; /* 恢复按钮大小 */
+      margin: 0 3px;
+      cursor: pointer;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+
+    .action-btn:hover {
+      background-color: #2563eb;
+    }
+
+    .error-message {
+      color: #ef4444;
+      margin-bottom: 15px;
+    }
+
+    .no-records {
+      text-align: center;
+      color: #94a3b8;
+      padding: 20px;
+    }
+
+    /* 新增按钮容器样式 */
+    .btn-container {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.7);
+    }
+
+    .modal-content {
+      background-color: #e6f2ff;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 300px;
+      border-radius: 5px;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover, .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+
+    .btn {
+      padding: 8px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+
+    .btn-cancel {
+      background-color: #f44336;
+    }
+
+    .btn:hover {
+      opacity: 0.8;
+    }
+
+    .logout-form {
+      display: inline;
+    }
+    .logout-btn {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font: inherit;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <!-- 侧边栏导航 -->
+  <div th:replace="~{fragments/menu :: menu}"></div>
+
+  <!-- 主内容区域 -->
+  <div class="main-content">
+    <div class="container">
+      <h2>考试科目管理</h2>
+
+      <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+          <tr>
+            <th>科目名称</th>
+            <th>操作</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:if="${subjects.size() == 0}">
+            <td colspan="2" class="no-records">暂无科目记录</td>
+          </tr>
+          <tr th:each="subject : ${subjects}">
+            <td th:text="${subject.subjectName}"></td>
+            <td>
+              <button class="action-btn"
+                      th:data-subject-name="${subject.subjectName}"
+                      onclick="openUpdateModal(this.getAttribute('data-subject-name'))">修改</button>
+              <button class="action-btn"
+                      th:data-subject-name="${subject.subjectName}"
+                      onclick="deleteSubject(this.getAttribute('data-subject-name'))">删除</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="btn-container">
+        <button class="btn" onclick="openAddModal()">添加科目</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 模态框部分保持不变 -->
+<div id="addModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeAddModal()">&times;</span>
+    <h3>添加科目</h3>
+    <form th:action="@{/exam-paper/subjects}" method="post">
+      <input type="hidden" name="action" value="add">
+      <div class="form-group">
+        <label for="addSubjectName">科目名称:</label>
+        <input type="text" id="addSubjectName" name="subjectName" required>
+      </div>
+      <button type="submit" class="btn">确认添加</button>
+      <button type="button" class="btn btn-cancel" onclick="closeAddModal()">取消</button>
+    </form>
+  </div>
+</div>
+
+<!-- 修改模态框 -->
+<div id="updateModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeUpdateModal()">&times;</span>
+    <h3>修改科目</h3>
+    <form th:action="@{/exam-paper/subjects}" method="post">
+      <input type="hidden" name="action" value="update">
+      <input type="hidden" id="oldName" name="oldName">
+      <div class="form-group">
+        <label for="newSubjectName">新科目名称:</label>
+        <input type="text" id="newSubjectName" name="newName" required>
+      </div>
+      <button type="submit" class="btn">确认修改</button>
+      <button type="button" class="btn btn-cancel" onclick="closeUpdateModal()">取消</button>
+    </form>
+  </div>
+</div>
+<form id="deleteForm" th:action="@{/exam-paper/subjects}" method="post" style="display:none;">
+  <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+  <input type="hidden" name="action" value="delete">
+  <input type="hidden" id="deleteSubjectName" name="subjectName">
+</form>
+<script>
+  // JavaScript代码保持不变
+  function openAddModal() {
+    document.getElementById('addModal').style.display = 'block';
+    document.getElementById('addSubjectName').focus();
+  }
+
+  function closeAddModal() {
+    document.getElementById('addModal').style.display = 'none';
+  }
+
+  function openUpdateModal(subjectName) {
+
+
+    document.getElementById('oldName').value = subjectName;
+    document.getElementById('newSubjectName').value = subjectName;
+    document.getElementById('updateModal').style.display = 'block';
+    document.getElementById('newSubjectName').focus();
+  }
+
+  function closeUpdateModal() {
+    document.getElementById('updateModal').style.display = 'none';
+  }
+
+
+
+  function deleteSubject(subjectName) {
+    if (confirm("确定要删除科目 '" + subjectName + "' 吗？")) {
+      document.getElementById('deleteSubjectName').value = subjectName;
+      document.getElementById('deleteForm').submit();
+    }
+  }
+
+  window.onclick = function(event) {
+    if (event.target == document.getElementById('addModal')) {
+      closeAddModal();
+    } else if (event.target == document.getElementById('updateModal')) {
+      closeUpdateModal();
+    }
+  }
+</script>
+</body>
+</html>
+请用spring boot+MVC+MyBatis+vue架构重新编写上述功能的代码
+实体类不要动，服务类尽量不动，界面保持一致，请给出完整的代码
+
+科目管理控制器
+package seucxxy.csd.examinint.controller;
+
+import jakarta.servlet.http.HttpSession;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import seucxxy.csd.examinint.entity.Subject;
+import seucxxy.csd.examinint.entity.User;
+import seucxxy.csd.examinint.service.SubjectService;
+
+import java.util.List;
+
+@Controller
+@RequestMapping("/exam-paper/subjects")
+public class SubjectController {
+
+    private final SubjectService subjectService;
+
+    public SubjectController(SubjectService subjectService) {
+        this.subjectService = subjectService;
+    }
+
+    @GetMapping
+    public String listSubjects(Model model, HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        List<Subject> subjects = subjectService.getAllSubjects();
+        model.addAttribute("subjects", subjects);
+        model.addAttribute("user", user);
+        return "/exam-paper/subjects";
+    }
+
+    @PostMapping
+    public String handleSubjectAction(
+            @RequestParam("action") String action,
+            @RequestParam(value = "subjectName", required = false) String subjectName,
+            @RequestParam(value = "oldName", required = false) String oldName,
+            @RequestParam(value = "newName", required = false) String newName,
+            Model model,
+            HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        model.addAttribute("user", user);
+
+        try {
+            switch (action) {
+                case "add":
+                    subjectService.addSubject(new Subject(subjectName));
+                    break;
+                case "update":
+                    subjectService.updateSubject(oldName, new Subject(newName));
+                    break;
+                case "delete":
+                    subjectService.deleteSubject(subjectName);
+                    break;
+                default:
+                    throw new IllegalArgumentException("无效的操作类型");
+            }
+            return "redirect:/exam-paper/subjects";
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+            return listSubjects(model, session);
+        }
+    }
+}
