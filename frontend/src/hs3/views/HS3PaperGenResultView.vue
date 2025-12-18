@@ -250,14 +250,14 @@
 
         <!-- 写作题目/阅读材料 -->
         <div v-if="segmentData.content" class="passage-content-block">
-          <h4>{{ isContinuedWriting(segmentData) ? '阅读材料与续写要求' : '写作题目' }}</h4>
-          <pre class="passage-text">{{ segmentData.content }}</pre>
+          <h4>{{ isContinuedWriting(segmentData) ? '阅读材料与续写要求' : '✍️ 写作要求' }}</h4>
+          <pre class="passage-text writing-prompt-text">{{ formatWritingPrompt(segmentData.content) }}</pre>
         </div>
 
         <!-- 范文 -->
         <div v-if="segmentData.questions && segmentData.questions.items && segmentData.questions.items.length" class="reference-writing-block">
           <h4>参考范文</h4>
-          <pre class="passage-text">{{ segmentData.questions.items[0].answer }}</pre>
+          <pre class="passage-text">{{ formatLongAnswer(segmentData.questions.items[0].answer) }}</pre>
         </div>
       </div>
     </div>
@@ -433,6 +433,136 @@ export default {
     },
     isContinuedWriting(segmentData) {
       return segmentData.section_name === '读后续写';
+    },
+    
+    /**
+     * 格式化写作题原题（保留下划线格式指引）
+     * 1. 第一个下划线之前换行
+     * 2. 文字+下划线按80字符换行
+     * 3. 如果文字会被切断，减少前面的下划线让文字完整在一行
+     */
+    formatWritingPrompt(text) {
+      if (!text || typeof text !== 'string') return text
+      
+      // 如果文本不包含下划线，不需要格式化
+      if (!text.includes('_')) return text
+      
+      // 1. 去掉所有换行符，合并成一个长字符串
+      const singleLine = text.replace(/\r?\n/g, '').trim()
+      
+      // 2. 找到第一个下划线的位置，之前的内容单独成行
+      const firstUnderscoreIndex = singleLine.indexOf('___')
+      
+      const outputLines = []
+      let remainingText = singleLine
+      
+      if (firstUnderscoreIndex > 0) {
+        // 第一个下划线之前的内容单独成行
+        outputLines.push(singleLine.substring(0, firstUnderscoreIndex).trim())
+        remainingText = singleLine.substring(firstUnderscoreIndex)
+      }
+      
+      // 3. 处理剩余内容：按80字符换行，保护文字不被切断
+      const LINE_WIDTH = 80
+      
+      while (remainingText.length > 0) {
+        if (remainingText.length <= LINE_WIDTH) {
+          outputLines.push(remainingText)
+          break
+        }
+        
+        let lineEnd = LINE_WIDTH
+        let candidateLine = remainingText.substring(0, lineEnd)
+        let nextPart = remainingText.substring(lineEnd)
+        
+        // 如果候选行末尾是下划线，且下一部分开头是文字
+        if (/^[^_]/.test(nextPart) && /_+$/.test(candidateLine)) {
+          const textMatch = nextPart.match(/^[^_]+/)
+          if (textMatch) {
+            const nextTextSegment = textMatch[0]
+            if (nextTextSegment.length <= LINE_WIDTH) {
+              outputLines.push(candidateLine)
+              remainingText = nextPart
+              continue
+            }
+          }
+        }
+        
+        // 如果候选行会在文字中间切断
+        if (/[^_]$/.test(candidateLine) && /^[^_]/.test(nextPart)) {
+          const lastUnderscoreInLine = candidateLine.lastIndexOf('___')
+          
+          if (lastUnderscoreInLine > 0) {
+            let textStart = lastUnderscoreInLine
+            while (textStart < candidateLine.length && candidateLine[textStart] === '_') {
+              textStart++
+            }
+            
+            const textInLine = candidateLine.substring(textStart)
+            const textMatch = nextPart.match(/^[^_]*/)
+            const textInNext = textMatch ? textMatch[0] : ''
+            const fullText = textInLine + textInNext
+            
+            if (fullText.length <= LINE_WIDTH) {
+              outputLines.push(candidateLine.substring(0, textStart))
+              remainingText = remainingText.substring(textStart)
+              continue
+            }
+          }
+        }
+        
+        outputLines.push(candidateLine)
+        remainingText = remainingText.substring(lineEnd)
+      }
+      
+      return outputLines.join('\n')
+    },
+    
+    /**
+     * 格式化长答案文本（如写作范文）
+     * 1. 去除所有下划线
+     * 2. 合并所有行为一个文本块
+     * 3. 按段落结构重新换行
+     */
+    formatLongAnswer(text) {
+      if (!text || typeof text !== 'string') return text
+      
+      // 1. 去除所有下划线
+      let cleanedText = text.replace(/_+/g, '')
+      
+      // 2. 按换行符分割
+      const lines = cleanedText.split(/\r?\n/)
+      
+      // 3. 处理每行：去除首尾空白
+      const cleanedLines = lines.map(line => line.trim()).filter(line => line.length > 0)
+      
+      // 4. 合并成段落（保留段落结构）
+      const paragraphs = []
+      let currentParagraph = ''
+      
+      for (let i = 0; i < cleanedLines.length; i++) {
+        const line = cleanedLines[i]
+        
+        // 判断是否是新段落的开始
+        const isNewParagraph = /^(Dear|Best|Yours|Take care|How have|In a word|I'm writing|We were|The entire|Li Hua|Four days later|I ran back)/i.test(line)
+        
+        if (isNewParagraph && currentParagraph) {
+          paragraphs.push(currentParagraph.trim())
+          currentParagraph = line
+        } else {
+          if (currentParagraph) {
+            currentParagraph += ' ' + line
+          } else {
+            currentParagraph = line
+          }
+        }
+      }
+      
+      if (currentParagraph) {
+        paragraphs.push(currentParagraph.trim())
+      }
+      
+      return paragraphs.join('\n\n')
     },
     
     async handleStoreToLibrary() {
@@ -659,6 +789,14 @@ h1 {
   color: #37474f;
   font-size: 15px;
   line-height: 1.8;
+}
+
+/* 写作提示文本 - 使用等宽字体确保下划线对齐 */
+.writing-prompt-text {
+  font-family: 'Courier New', Consolas, 'Liberation Mono', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  letter-spacing: 0;
 }
 
 .questions-block {

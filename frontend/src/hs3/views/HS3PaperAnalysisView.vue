@@ -92,8 +92,8 @@
 
         <!-- 阅读材料/文章内容 -->
         <div v-if="segment.content" class="content-block">
-          <h4 class="content-title">📖 阅读材料</h4>
-          <pre :class="['passage-text', { 'writing-prompt-text': isLongAnswerSegment(segment) }]">{{ segment.content }}</pre>
+          <h4 class="content-title">{{ isLongAnswerSegment(segment) ? '✍️ 写作要求' : '📖 阅读材料' }}</h4>
+          <pre :class="['passage-text', { 'writing-prompt-text': isLongAnswerSegment(segment) }]">{{ isLongAnswerSegment(segment) ? formatWritingPrompt(segment.content) : segment.content }}</pre>
         </div>
 
         <!-- ========== 根据题目类型判断展示方式 ========== -->
@@ -135,7 +135,7 @@
                 v-show="q.answer"
               >
                 <span class="answer-number" v-if="!isLongAnswerSegment(segment)">{{ q.question_number }}</span>
-                <span class="answer-value">{{ q.answer }}</span>
+                <span class="answer-value">{{ isLongAnswerSegment(segment) ? formatLongAnswer(q.answer) : q.answer }}</span>
               </div>
             </div>
           </div>
@@ -179,7 +179,7 @@
                 v-show="q.answer"
               >
                 <span class="answer-number" v-if="!isLongAnswerSegment(segment)">{{ q.question_number }}</span>
-                <span class="answer-value">{{ q.answer }}</span>
+                <span class="answer-value">{{ isLongAnswerSegment(segment) ? formatLongAnswer(q.answer) : q.answer }}</span>
               </div>
             </div>
           </div>
@@ -217,7 +217,7 @@
                 v-show="q.answer"
               >
                 <span class="answer-no" v-if="!isLongAnswerSegment(segment)">{{ q.question_number }}.</span>
-                <span class="answer-word">{{ q.answer }}</span>
+                <span class="answer-word">{{ isLongAnswerSegment(segment) ? formatLongAnswer(q.answer) : q.answer }}</span>
               </div>
             </div>
           </div>
@@ -271,7 +271,7 @@
                 v-show="q.answer"
               >
                 <span class="answer-number" v-if="!isLongAnswerSegment(segment)">{{ q.question_number }}</span>
-                <span class="answer-value">{{ q.answer }}</span>
+                <span class="answer-value">{{ isLongAnswerSegment(segment) ? formatLongAnswer(q.answer) : q.answer }}</span>
               </div>
             </div>
           </div>
@@ -760,6 +760,164 @@ const isLongAnswerSegment = (segment) => {
   }
   const items = getQuestionItems(segment)
   return items.some((q) => q && q.answer && String(q.answer).length > 80)
+}
+
+/**
+ * 格式化写作题原题（保留下划线格式指引）
+ * 1. 第一个下划线之前换行
+ * 2. 文字+下划线按80字符换行
+ * 3. 如果文字会被切断，减少前面的下划线让文字完整在一行
+ * 4. 文字本身超过80字符则不做特殊处理
+ * @param text 原始原题文本
+ */
+const formatWritingPrompt = (text) => {
+  if (!text || typeof text !== 'string') return text
+  
+  // 如果文本不包含下划线，不需要格式化
+  if (!text.includes('_')) return text
+  
+  // 1. 去掉所有换行符，合并成一个长字符串
+  const singleLine = text.replace(/\r?\n/g, '').trim()
+  
+  // 2. 找到第一个下划线的位置，之前的内容单独成行
+  const firstUnderscoreIndex = singleLine.indexOf('___')
+  
+  const outputLines = []
+  let remainingText = singleLine
+  
+  if (firstUnderscoreIndex > 0) {
+    // 第一个下划线之前的内容单独成行
+    outputLines.push(singleLine.substring(0, firstUnderscoreIndex).trim())
+    remainingText = singleLine.substring(firstUnderscoreIndex)
+  }
+  
+  // 3. 处理剩余内容：按80字符换行，保护文字不被切断
+  const LINE_WIDTH = 80
+  
+  while (remainingText.length > 0) {
+    if (remainingText.length <= LINE_WIDTH) {
+      // 剩余内容不超过行宽，直接输出
+      outputLines.push(remainingText)
+      break
+    }
+    
+    // 取前80个字符作为候选行
+    let lineEnd = LINE_WIDTH
+    let candidateLine = remainingText.substring(0, lineEnd)
+    
+    // 检查第81个字符开始的位置，判断是否会切断文字
+    // 向后找到下一个文字段的开始位置
+    let nextPart = remainingText.substring(lineEnd)
+    
+    // 如果候选行末尾是下划线，且下一部分开头是文字
+    // 尝试在下划线处截断，让文字完整
+    if (/^[^_]/.test(nextPart) && /_+$/.test(candidateLine)) {
+      // 下一部分开头是文字，当前行末尾是下划线
+      // 找到文字段（从nextPart开始到下一个下划线或结尾）
+      const textMatch = nextPart.match(/^[^_]+/)
+      if (textMatch) {
+        const nextTextSegment = textMatch[0]
+        // 如果这段文字不超过80，减少当前行的下划线
+        if (nextTextSegment.length <= LINE_WIDTH) {
+          // 可以直接在下划线处截断
+          outputLines.push(candidateLine)
+          remainingText = nextPart
+          continue
+        }
+      }
+    }
+    
+    // 如果候选行会在文字中间切断
+    // 检查是否正在切断文字
+    if (/[^_]$/.test(candidateLine) && /^[^_]/.test(nextPart)) {
+      // 候选行末尾是文字，下一部分开头也是文字 - 正在切断文字
+      // 向前找到这段文字的开始（下划线结束的位置）
+      const lastUnderscoreInLine = candidateLine.lastIndexOf('___')
+      
+      if (lastUnderscoreInLine > 0) {
+        // 找到文字开始的位置
+        let textStart = lastUnderscoreInLine
+        while (textStart < candidateLine.length && candidateLine[textStart] === '_') {
+          textStart++
+        }
+        
+        // 计算这段文字的完整长度
+        const textInLine = candidateLine.substring(textStart)
+        const textMatch = nextPart.match(/^[^_]*/)
+        const textInNext = textMatch ? textMatch[0] : ''
+        const fullText = textInLine + textInNext
+        
+        // 如果完整文字不超过80，在文字前的下划线处截断
+        if (fullText.length <= LINE_WIDTH) {
+          // 在textStart位置截断，但保留一些下划线
+          outputLines.push(candidateLine.substring(0, textStart))
+          remainingText = remainingText.substring(textStart)
+          continue
+        }
+      }
+    }
+    
+    // 默认：按80字符截断
+    outputLines.push(candidateLine)
+    remainingText = remainingText.substring(lineEnd)
+  }
+  
+  // 4. 返回格式化后的文本
+  return outputLines.join('\n')
+}
+
+/**
+ * 格式化长答案文本（如写作范文）
+ * 1. 去除所有下划线
+ * 2. 合并所有行为一个文本块
+ * 3. 按段落结构重新换行
+ * @param text 原始答案文本
+ */
+const formatLongAnswer = (text) => {
+  if (!text || typeof text !== 'string') return text
+  
+  // 1. 去除所有下划线
+  let cleanedText = text.replace(/_+/g, '')
+  
+  // 2. 按换行符分割
+  const lines = cleanedText.split(/\r?\n/)
+  
+  // 3. 处理每行：去除首尾空白
+  const cleanedLines = lines.map(line => line.trim()).filter(line => line.length > 0)
+  
+  // 3. 合并成段落（保留段落结构）
+  // 识别段落：如果一行以大写字母开头且前一行不是以逗号/连词结尾，认为是新段落
+  const paragraphs = []
+  let currentParagraph = ''
+  
+  for (let i = 0; i < cleanedLines.length; i++) {
+    const line = cleanedLines[i]
+    const prevLine = i > 0 ? cleanedLines[i - 1] : ''
+    
+    // 判断是否是新段落的开始
+    // 常见的信件格式标识：Dear, Best, Yours, Take care, How have, In a word 等
+    const isNewParagraph = /^(Dear|Best|Yours|Take care|How have|In a word|I'm writing|We were|The entire|Li Hua)/i.test(line)
+    
+    if (isNewParagraph && currentParagraph) {
+      paragraphs.push(currentParagraph.trim())
+      currentParagraph = line
+    } else {
+      // 合并到当前段落
+      if (currentParagraph) {
+        currentParagraph += ' ' + line
+      } else {
+        currentParagraph = line
+      }
+    }
+  }
+  
+  // 添加最后一个段落
+  if (currentParagraph) {
+    paragraphs.push(currentParagraph.trim())
+  }
+  
+  // 4. 返回格式化后的文本，段落之间用双换行分隔
+  return paragraphs.join('\n\n')
 }
 
 /**

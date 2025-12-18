@@ -37,6 +37,14 @@ public class HS3CozeWorkflowService {
 
     // 高考英语试卷解析工作流ID
     private static final String HS3_PAPER_ANALYSIS_WORKFLOW_ID = "7583193741231128582";
+    
+    // 各部分期望的segment数量（根据Neo4j图数据库结构定义）
+    private static final Map<String, Integer> EXPECTED_SEGMENT_COUNTS = Map.of(
+        "听力", 10,          // 第一节5个对话 + 第二节5个对话/独白
+        "阅读理解", 5,       // 第一节4篇阅读 + 第二节1个七选五
+        "语言知识运用", 2,   // 第一节1个完形填空 + 第二节1个语法填空
+        "写作", 2            // 第一节1个应用文 + 第二节1个读后续写
+    );
 
     @Value("${coze.api.url}")
     private String cozeApiUrl;
@@ -96,26 +104,27 @@ public class HS3CozeWorkflowService {
             try {
                 List<Map<String, Object>> result = callCozeWorkflowOnce(inputFile, topicsJson, attempt, partName);
 
-                boolean isListening = partName != null && partName.contains("听力");
-                if (isListening && (result == null || result.size() != 10)) {
+                // 验证segment数量是否符合预期（根据图数据库结构）
+                String segmentCountCheckResult = checkSegmentCount(result, partName);
+                if (segmentCountCheckResult != null) {
                     String partInfo = partName != null ? " (Part: " + partName + ")" : "";
-                    logger.warn("[HS3 Coze] 听力片段数量不等于10，实际 {}，继续重试{} (attempt {}/{})", 
-                            result == null ? 0 : result.size(), partInfo, attempt, maxAttempts);
+                    logger.warn("[HS3 Coze] segment数量检查不通过{}: {}，立即重试 (attempt {}/{})", 
+                            partInfo, segmentCountCheckResult, attempt, maxAttempts);
                     if (attempt < maxAttempts) {
-                        Thread.sleep(2000);
+                        // 立即重试，不等待
                         continue;
                     }
-                    throw new RuntimeException("听力片段数量不等于10，已重试" + maxAttempts + "次");
+                    throw new RuntimeException(segmentCountCheckResult + "，已重试" + maxAttempts + "次");
                 }
 
                 // 检查七选五、完形填空、语法填空的option_content是否为空
                 String optionCheckResult = checkOptionContent(result);
                 if (optionCheckResult != null) {
                     String partInfo = partName != null ? " (Part: " + partName + ")" : "";
-                    logger.warn("[HS3 Coze] option_content检查不通过{}: {}，继续重试 (attempt {}/{})", 
+                    logger.warn("[HS3 Coze] option_content检查不通过{}: {}，立即重试 (attempt {}/{})", 
                             partInfo, optionCheckResult, attempt, maxAttempts);
                     if (attempt < maxAttempts) {
-                        Thread.sleep(2000);
+                        // 立即重试，不等待
                         continue;
                     }
                     throw new RuntimeException("智能体平台不可用：" + optionCheckResult + "，已重试" + maxAttempts + "次");
@@ -128,14 +137,48 @@ public class HS3CozeWorkflowService {
                 lastException = e;
                 logger.warn("[HS3 Coze] 第{}次调用失败{}: {}", attempt, 
                         partName != null ? " (Part: " + partName + ")" : "", e.getMessage());
-                if (attempt < maxAttempts) {
-                    Thread.sleep(2000);
-                }
+                // 立即重试，不等待
             }
         }
 
         throw new RuntimeException("Coze试卷解析失败" + (partName != null ? " (Part: " + partName + ")" : "") + 
                 "，已重试" + maxAttempts + "次", lastException);
+    }
+    
+    /**
+     * 检查segment数量是否符合预期（根据Neo4j图数据库结构）
+     * @param segments 解析后的segments列表
+     * @param partName 部分名称
+     * @return 如果检查通过返回null，否则返回错误信息
+     */
+    private String checkSegmentCount(List<Map<String, Object>> segments, String partName) {
+        if (partName == null || partName.isEmpty()) {
+            return null; // 不指定partName时不检查
+        }
+        
+        // 查找匹配的期望数量
+        Integer expectedCount = null;
+        for (Map.Entry<String, Integer> entry : EXPECTED_SEGMENT_COUNTS.entrySet()) {
+            if (partName.contains(entry.getKey())) {
+                expectedCount = entry.getValue();
+                break;
+            }
+        }
+        
+        if (expectedCount == null) {
+            logger.debug("[HS3 Coze] 未找到 {} 的期望segment数量配置，跳过检查", partName);
+            return null; // 未配置期望数量，不检查
+        }
+        
+        int actualCount = segments != null ? segments.size() : 0;
+        
+        if (actualCount != expectedCount) {
+            logger.warn("[HS3 Coze] {} segment数量不符合预期: 期望={}, 实际={}", partName, expectedCount, actualCount);
+            return String.format("%s 解析结果不完整：期望 %d 个segment，实际 %d 个", partName, expectedCount, actualCount);
+        }
+        
+        logger.info("[HS3 Coze] {} segment数量验证通过: {}", partName, actualCount);
+        return null; // 检查通过
     }
 
     /**

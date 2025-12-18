@@ -372,7 +372,7 @@ const checkAudioServiceStatus = async () => {
   return true
 }
 
-// 生成听力音频
+// 生成听力音频（带重试机制，最多5次）
 const generateListeningAudio = async () => {
   if (audioGenerating.value) return
   
@@ -399,60 +399,79 @@ const generateListeningAudio = async () => {
     return
   }
   
-  try {
-    const url = `${JAVA_AUDIO_API_BASE}/generate-listening-full`
+  const url = `${JAVA_AUDIO_API_BASE}/generate-listening-full`
 
-    // 构造完整的听力单元数据
-    const payloadSegments = listeningSegments.map(s => {
-      const questions = getQuestionItems(s)
-      return {
-        content: s.content || '',
-        section_name: s.section_name || '',
-        section_number: s.section_number || '',
-        segment_name: s.segment_name || '',
-        segment_number: s.segment_number || '',
-        questions: {
-          count: questions.length,
-          items: questions.map(q => ({
-            answer: q.answer || '',
-            options: getOptionsOf(q).map(opt => ({
-              option_content: opt.text,
-              option_mark: opt.mark
-            })),
-            question_content: getQuestionText(q),
-            question_number: q.question_number || '',
-            question_score: q.question_score || 1.5
-          }))
-        }
+  // 构造完整的听力单元数据
+  const payloadSegments = listeningSegments.map(s => {
+    const questions = getQuestionItems(s)
+    return {
+      content: s.content || '',
+      section_name: s.section_name || '',
+      section_number: s.section_number || '',
+      segment_name: s.segment_name || '',
+      segment_number: s.segment_number || '',
+      questions: {
+        count: questions.length,
+        items: questions.map(q => ({
+          answer: q.answer || '',
+          options: getOptionsOf(q).map(opt => ({
+            option_content: opt.text,
+            option_mark: opt.mark
+          })),
+          question_content: getQuestionText(q),
+          question_number: q.question_number || '',
+          question_score: q.question_score || 1.5
+        }))
       }
-    }).filter(s => s.content && s.content.trim().length > 0)
-
-    if (!payloadSegments.length) {
-      ElMessage.error('未能从试卷中提取到可合成的听力文本')
-      audioGenerating.value = false
-      return
     }
+  }).filter(s => s.content && s.content.trim().length > 0)
 
-    const response = await axios.post(url, {
-      segments: payloadSegments
-    }, { 
-      withCredentials: true, 
-      timeout: 30 * 60 * 1000  // 30分钟超时
-    })
-    
-    if (response.data.success) {
-      audioUrl.value = response.data.audio_url
-      hasAudio.value = true
-      ElMessage.success('听力音频生成成功！')
-    } else {
-      throw new Error(response.data.error || '音频生成失败')
-    }
-  } catch (error) {
-    const serverMsg = error.response?.data?.message || error.response?.data?.error
-    ElMessage.error('音频生成失败：' + (serverMsg || error.message))
-  } finally {
+  if (!payloadSegments.length) {
+    ElMessage.error('未能从试卷中提取到可合成的听力文本')
     audioGenerating.value = false
+    return
   }
+
+  // 重试配置
+  const MAX_RETRIES = 5
+  let lastError = null
+  
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      console.log(`[听力音频] 第 ${attempt}/${MAX_RETRIES} 次尝试生成...`)
+      
+      if (attempt > 1) {
+        ElMessage.info(`正在进行第 ${attempt} 次重试...`)
+      }
+      
+      const response = await axios.post(url, {
+        segments: payloadSegments
+      }, { 
+        withCredentials: true, 
+        timeout: 30 * 60 * 1000  // 30分钟超时
+      })
+      
+      if (response.data.success) {
+        audioUrl.value = response.data.audio_url
+        hasAudio.value = true
+        ElMessage.success('听力音频生成成功！')
+        audioGenerating.value = false
+        return // 成功则退出
+      } else {
+        throw new Error(response.data.error || '音频生成失败')
+      }
+    } catch (error) {
+      lastError = error
+      const serverMsg = error.response?.data?.message || error.response?.data?.error || error.message
+      console.error(`[听力音频] 第 ${attempt} 次尝试失败:`, serverMsg)
+      // 立即重试，不等待
+    }
+  }
+  
+  // 所有重试都失败
+  const serverMsg = lastError?.response?.data?.message || lastError?.response?.data?.error || lastError?.message
+  ElMessage.error(`音频生成失败（已重试${MAX_RETRIES}次）：` + (serverMsg || '未知错误'))
+  audioGenerating.value = false
 }
 
 // 音频播放控制
