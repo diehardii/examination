@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="seucxxy.csd.backend.mapper.UserMapper">
-    <resultMap id="userResultMap" type="seucxxy.csd.backend.entity.User">
+<mapper namespace="seucxxy.csd.backend.common.mapper.UserMapper">
+    <resultMap id="userResultMap" type="seucxxy.csd.backend.common.entity.User">
         <id property="id" column="id"/>
         <result property="username" column="username"/>
         <result property="password" column="password"/>
         <result property="phone" column="phone"/>
         <result property="roleId" column="role_id"/>
+        <result property="identityId" column="identity_id"/>
+        <result property="gender" column="gender"/>
+        <result property="email" column="email"/>
+        <result property="address" column="address"/>
+        <result property="realName" column="real_name"/>
         <association property="role" column="role_id"
-                     select="seucxxy.csd.backend.mapper.RoleMapper.findById"/>
+                     select="seucxxy.csd.backend.common.mapper.RoleMapper.findById"/>
     </resultMap>
 
 
@@ -25,25 +30,37 @@
         SELECT * FROM users WHERE phone = #{phone}
     </select>
 
-    <insert id="insertUser" parameterType="seucxxy.csd.backend.entity.User" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO users (username, password, phone, role_id)
-        VALUES (#{username}, #{password}, #{phone}, #{roleId})
+    <insert id="insertUser" parameterType="seucxxy.csd.backend.common.entity.User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (username, password, phone, role_id, identity_id, gender, email, address, real_name)
+        VALUES (#{username}, #{password}, #{phone}, #{roleId}, #{identityId}, #{gender}, #{email}, #{address}, #{realName})
     </insert>
 
-    <resultMap id="userWithRoleResultMap" type="seucxxy.csd.backend.entity.User">
+    <resultMap id="userWithRoleResultMap" type="seucxxy.csd.backend.common.entity.User">
         <id property="id" column="id"/>
         <result property="username" column="username"/>
         <result property="password" column="password"/>
         <result property="phone" column="phone"/>
         <result property="roleId" column="role_id"/>
+        <result property="identityId" column="identity_id"/>
+        <result property="gender" column="gender"/>
+        <result property="email" column="email"/>
+        <result property="address" column="address"/>
+        <result property="realName" column="real_name"/>
         <!-- 关联角色对象 -->
         <association property="role" column="role_id"
-                     javaType="seucxxy.csd.backend.entity.Role"
-                     select="seucxxy.csd.backend.mapper.RoleMapper.findById"/>
+                     javaType="seucxxy.csd.backend.common.entity.Role"
+                     select="seucxxy.csd.backend.common.mapper.RoleMapper.findById"/>
     </resultMap>
 
     <select id="findAllUsersWithRoles" resultMap="userWithRoleResultMap">
         SELECT * FROM users
+    </select>
+
+    <select id="findUsersByRoleName" resultMap="userWithRoleResultMap">
+        SELECT u.*
+        FROM users u
+        INNER JOIN roles r ON u.role_id = r.role_id
+        WHERE UPPER(r.role_name) = UPPER(#{roleName})
     </select>
 
     <!-- 更新用户角色 -->
@@ -66,19 +83,28 @@
         WHERE id = #{id}
     </update>
 
+    <update id="updateUserProfile" parameterType="seucxxy.csd.backend.common.entity.User">
+        UPDATE users
+        SET username = #{username},
+            phone = #{phone},
+            identity_id = #{identityId},
+            gender = #{gender},
+            email = #{email},
+            address = #{address},
+            real_name = #{realName}
+        WHERE id = #{id}
+    </update>
 
-        <select id="findUsersByExamPaperId" resultType="seucxxy.csd.backend.dto.UserExamPaperDTO">
+
+        <select id="findUsersByExamPaperId" resultType="seucxxy.csd.backend.common.dto.UserExamPaperDTO">
             SELECT
-                u.id as userId,
-                u.username as userName,
-                ud.real_name as realName,
-                un.university_name as university,
-                d.department_name as department
+                u.id AS userId,
+                u.username AS userName,
+                u.real_name AS realName,
+                NULL AS university,
+                NULL AS department
             FROM examinai.user_exam_paper uep
-                     JOIN examinai.users u ON uep.username = u.username
-                     LEFT JOIN examinai.userDetail ud ON u.id = ud.user_id
-                     LEFT JOIN examinai.university un ON ud.university_id = un.university_id
-                     LEFT JOIN examinai.department d ON ud.department_id = d.department_id
+                JOIN examinai.users u ON uep.username = u.username
             WHERE uep.exam_paper_id = #{examPaperId}
         </select>
 </mapper>

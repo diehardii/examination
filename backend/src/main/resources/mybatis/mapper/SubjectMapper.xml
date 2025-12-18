@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="seucxxy.csd.backend.mapper.SubjectMapper">
-    <resultMap id="SubjectResultMap" type="seucxxy.csd.backend.entity.Subject">
-        <id property="subjectId" column="subject_id"/>
-        <result property="subjectName" column="subject_name"/>
+<mapper namespace="seucxxy.csd.backend.common.mapper.SubjectMapper">
+    <resultMap id="SubjectResultMap" type="seucxxy.csd.backend.common.entity.Subject">
+        <id property="subjectId" column="subject_en_id"/>
+        <result property="subjectName" column="subject_en_name"/>
     </resultMap>
 
     <select id="findAllSubjects" resultMap="SubjectResultMap">
-        SELECT * FROM subjects
+        SELECT * FROM subjects_en
     </select>
 
     <select id="findSubjectsByUsername" resultType="String" parameterType="String">
@@ -16,25 +16,38 @@
             (SELECT id FROM users WHERE username = #{username}))
     </select>
 
+    <select id="findSubjectsByStudentId" resultType="String" parameterType="Long">
+        SELECT DISTINCT exam_paper_subject FROM exam_paper WHERE id IN
+            (SELECT exam_paper_id FROM user_test_record WHERE user_id = #{studentId})
+    </select>
+
     <select id="findSubjectBySubjectName" resultMap="SubjectResultMap" parameterType="String">
-        SELECT * FROM subjects WHERE subject_name = #{name}
+        SELECT * FROM subjects_en WHERE subject_en_name = #{name}
     </select>
 
     <select id="findSubjectById" resultMap="SubjectResultMap" parameterType="int">
-        SELECT * FROM subjects WHERE subject_id = #{id}
+        SELECT * FROM subjects_en WHERE subject_en_id = #{id}
     </select>
 
 
-    <insert id="insertSubject" parameterType="Subject" useGeneratedKeys="true" keyProperty="subjectId">
-        INSERT INTO subjects(subject_name) VALUES(#{subjectName})
+
+    <insert id="insertSubject" parameterType="seucxxy.csd.backend.common.entity.Subject" useGeneratedKeys="true" keyProperty="subjectId">
+        INSERT INTO subjects_en(subject_en_name) VALUES(#{subjectName})
     </insert>
 
     <update id="updateSubject">
-        UPDATE subjects SET subject_name = #{newSubject.subjectName}
-        WHERE subject_id = #{subjectId}
+        UPDATE subjects_en SET subject_en_name = #{newSubject.subjectName}
+        WHERE subject_en_id = #{subjectId}
     </update>
 
     <delete id="deleteSubject">
-        DELETE FROM subjects WHERE subject_id = #{subjectId}
+        DELETE FROM subjects_en WHERE subject_en_id = #{subjectId}
     </delete>
+
+    <select id="findSubjectsByTeacherId" resultType="String" parameterType="Long">
+        SELECT s.subject_name
+        FROM subject s
+                 JOIN userdetail ud ON s.subject_id = ud.subject_id
+        WHERE ud.user_id = #{teacherId}
+    </select>
 </mapper>

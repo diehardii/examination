@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="seucxxy.csd.backend.common.mapper.SubjectsEnMapper">
+    <resultMap id="SubjectsEnResultMap" type="seucxxy.csd.backend.common.entity.SubjectsEn">
+        <id property="id" column="subject_en_id"/>
+        <result property="subjectEnName" column="subject_en_name"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="SubjectsEnResultMap">
+        SELECT subject_en_id, subject_en_name FROM subjects_en ORDER BY subject_en_name
+    </select>
+
+    <select id="findById" resultMap="SubjectsEnResultMap" parameterType="long">
+        SELECT subject_en_id, subject_en_name FROM subjects_en WHERE subject_en_id = #{id}
+    </select>
+
+    <select id="findByName" resultMap="SubjectsEnResultMap" parameterType="string">
+        SELECT subject_en_id, subject_en_name FROM subjects_en WHERE subject_en_name = #{name}
+    </select>
+
+    <delete id="deleteAll">
+        DELETE FROM subjects_en
+    </delete>
+
+    <insert id="insert" parameterType="seucxxy.csd.backend.common.entity.SubjectsEn">
+        INSERT INTO subjects_en (subject_en_name) VALUES (#{subjectEnName})
+    </insert>
+</mapper>

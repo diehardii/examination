@@ -1,0 +1,146 @@
+﻿# ==================== 安全配置：保护本地开发环境 ====================
+# 此配置确保Git不跟踪本地开发文件，同时保护它们不被删除
+
+# ==================== Python开发环境（绝对保护） ====================
+# 虚拟环境 - 必须忽略，但本地文件会保留
+.venv/
+venv/
+ENV/
+env/
+Pipfile.lock
+poetry.lock
+.python-version
+
+# Python编译缓存
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ==================== 前端开发环境 ====================
+node_modules/
+.npm
+.yarn-integrity
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# 构建产物
+dist/
+build/
+.rollup.cache/
+.next/
+.nuxt/
+.vuepress/dist/
+
+# ==================== Java开发环境 ====================
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+*.tar.gz
+*.rar
+.mvn/wrapper/maven-wrapper.properties
+
+# ==================== 数据库和本地数据（必须忽略） ====================
+# 向量数据库
+chroma/
+*.chroma
+chroma.sqlite3
+*.parquet
+*.pq
+
+# 本地数据库
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# ==================== 项目输出和日志 ====================
+# 服务输出
+python-services/outputs/
+python-services/logs/
+
+# 应用日志
+logs/
+*.log
+backend/logs/
+*.log.*
+
+# 临时文件
+temp/
+tmp/
+*.tmp
+*.bak
+*.cache
+
+# ==================== 音频和媒体文件 ====================
+*.wav
+*.mp3
+*.ogg
+*.flac
+*.aac
+*.m4a
+*.wma
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+# ==================== IDE和编辑器配置 ====================
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+*~
+*.iml
+*.iws
+*.ipr
+
+# ==================== 系统文件 ====================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ==================== 环境变量和密钥（安全关键） ====================
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.key
+*.pem
+*.crt
+config.local.*
+secrets.ini
+credentials.json
+
+# ==================== 项目特定（根据您的需求调整） ====================
+# 备份文件
+*.backup
+*.old
+*.orig
+
+# 工作区文件
+*.code-workspace
+
+# 文档生成
+site/
+docs/_build/
+_build/

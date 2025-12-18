@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="seucxxy.csd.backend.cet4.mapper.CET4UserTestRecordSegmentEnMapper">
+
+    <resultMap id="UserTestRecordSegmentEnMap" type="seucxxy.csd.backend.cet4.entity.CET4UserTestRecordSegmentEn">
+        <id property="id" column="id"/>
+        <result property="segmentId" column="segment_id"/>
+        <result property="questionType" column="question_type"/>
+        <result property="score" column="score"/>
+        <result property="correctAnswersNumber" column="correct_answers_number"/>
+        <result property="numberOfQuestions" column="number_of_questions"/>
+        <result property="correctAnswersPercent" column="correct_answers_percent"/>
+        <result property="testEnId" column="test_en_id"/>
+    </resultMap>
+
+    <select id="findByTestEnId" parameterType="long" resultMap="UserTestRecordSegmentEnMap">
+        SELECT id, segment_id, question_type, score, correct_answers_number, number_of_questions, correct_answers_percent, test_en_id
+        FROM user_test_record_segment_en
+        WHERE test_en_id = #{testEnId}
+        ORDER BY id ASC
+    </select>
+</mapper>

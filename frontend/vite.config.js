@@ -20,7 +20,12 @@ export default defineConfig({
   },
   server: {
     port: 5002, // 前端开发端口
-
-
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false
+      }
+    }
   },
 })
